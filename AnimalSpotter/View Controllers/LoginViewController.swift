@@ -20,6 +20,8 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet private weak var loginTypeSegmentedControl: UISegmentedControl!
     @IBOutlet private weak var signInButton: UIButton!
     
+    //optional because we dont want to actually create api controller in the view controller but in the table view controller.
+    //due to running that page once we have logged in.
     var apiController: APIController?
     var loginType = LoginType.signUp
 
@@ -35,6 +37,8 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func buttonTapped(_ sender: UIButton) {
         // perform login or sign up operation based on loginType
+        //access api controller.
+        
     }
     
     @IBAction func signInTypeChanged(_ sender: UISegmentedControl) {

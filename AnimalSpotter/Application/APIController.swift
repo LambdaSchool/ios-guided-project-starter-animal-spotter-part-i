@@ -18,6 +18,9 @@ class APIController {
     
     private let baseUrl = URL(string: "https://lambdaanimalspotter.vapor.cloud/api")!
     
+    //bearerToken to see if were loggin in
+    var bearer: Bearer?
+    
     // create function for sign up
     func signUp(with user: User, completion: @escaping (Error?) -> ()) {
         

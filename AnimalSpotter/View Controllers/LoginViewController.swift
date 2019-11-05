@@ -66,6 +66,15 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                 }
             } else {
                 //run sign in api call
+                apiController.signIn(with: user) { error in
+                    if let error = error {
+                        print("Error occured during sign up \(error)")
+                    } else {
+                        DispatchQueue.main.async {
+                            self.dismiss(animated: true, completion: nil)
+                        }
+                    }
+                }
             }
         }
     }

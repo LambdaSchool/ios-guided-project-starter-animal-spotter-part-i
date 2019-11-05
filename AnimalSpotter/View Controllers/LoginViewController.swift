@@ -61,6 +61,8 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                         }
                     }
                 }
+            } else {
+                //run sign in api call
             }
         }
     }

@@ -2,7 +2,7 @@
 //  AnimalsTableViewController.swift
 //  AnimalSpotter
 //
-//  Created by Ben Gohlke on 4/16/19.
+//  Created by Joseph Rogers on 4/16/19.
 //  Copyright © 2019 Lambda School. All rights reserved.
 //
 
@@ -12,7 +12,11 @@ class AnimalsTableViewController: UITableViewController {
     
     // MARK: - Properties
     
-    private var animalNames: [String] = []
+    private var animalNames: [String] = [] {
+        didSet {
+            tableView.reloadData()
+        }
+    }
     
     //creating the api controller instance. we will pass this to the login view whenever needed.
     let apiController = APIController()
@@ -51,16 +55,32 @@ class AnimalsTableViewController: UITableViewController {
     
     @IBAction func getAnimals(_ sender: UIBarButtonItem) {
         // fetch all animals from API
+        apiController.fetchAllAnimalNames { result in
+            if let arrayOfAnimalsNames = try? result.get() {
+                DispatchQueue.main.async {
+                    self.animalNames = arrayOfAnimalsNames.sorted()
+                }
+            }
+        }
     }
     
     // MARK: - Navigation
-
+    
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "LoginViewModalSegue" {
             // inject dependencies
             if let loginVC = segue.destination as? LoginViewController {
                 loginVC.apiController = apiController
+            }
+        } else if segue.identifier == "ShowAnimalDetailSegue" {
+            //inject dependencies
+            if let detailVC = segue.destination as? AnimalDetailViewController {
+                if let indexPath = tableView.indexPathForSelectedRow {
+                    detailVC.animalName = animalNames[indexPath.row]
+                }
+                //FIXME:
+                detailVC.apiController = apiController
             }
         }
     }

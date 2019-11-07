@@ -2,7 +2,7 @@
 //  LoginViewController.swift
 //  AnimalSpotter
 //
-//  Created by Ben Gohlke on 4/16/19.
+//  Created by Joseph Rogers on 4/16/19.
 //  Copyright © 2019 Lambda School. All rights reserved.
 //
 

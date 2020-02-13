@@ -2,7 +2,7 @@
 //  AnimalDetailViewController.swift
 //  AnimalSpotter
 //
-//  Created by Ben Gohlke on 10/31/19.
+//  Created by Joseph Rogers on 10/31/19.
 //  Copyright © 2019 Lambda School. All rights reserved.
 //
 
@@ -17,9 +17,76 @@ class AnimalDetailViewController: UIViewController {
     @IBOutlet weak var descriptionLabel: UILabel!
     @IBOutlet weak var animalImageView: UIImageView!
     
+    
+    //created a dependant. we will inject it with data.
+    var animalName: String?
+    //optional because we are injecting it with a dependency.
+    var apiController: APIController?
+    
     // MARK: - View Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        getDetails()
+    }
+    
+    private func getDetails() {
+        guard let apiController = apiController,
+              let animalName = animalName else { return }
+        
+            apiController.fetchDetails(for: animalName) { (result) in
+                // or if let animal = try? result.get() {
+                // DispatchQueue.Main.Async {
+                // self.updatesViews(with: animal)
+                //}
+                //}
+            do {
+                let animal = try result.get()
+                DispatchQueue.main.async {
+                    self.updateViews(with: animal)
+                }
+                apiController.fetchImage(at: animal.imageURL) { (result) in
+                    if let image = try? result.get() {
+                        DispatchQueue.main.async {
+                            self.animalImageView.image = image
+                        }
+                    }
+                }
+            } catch {
+                if let error = error as? NetworkError {
+                    switch error {
+                    case .noToken:
+                        print("No error token exists")
+                        //testing an error case
+                        let alertController = UIAlertController(title: "Not Logged in", message: "please log in before you try to use the app!", preferredStyle: .alert)
+                        let alertAction = UIAlertAction(title: "ok", style: .default, handler: nil)
+                        alertController.addAction(alertAction)
+                        self.present(alertController, animated: true)
+                    case .badToken:
+                        print("Bearing token invalid")
+                    case .dataError:
+                        print("Other error occured, see log")
+                    case .unknownNetworkError:
+                        print("no data received, or data corrupted")
+                    case .decodeError:
+                        print("JSON could not be decoded")
+                    case .badImageEncoding:
+                        print("Bad image data from the API")
+                    case .badURL:
+                        print("Bad URL. please check endpoints")
+                    }
+                }
+            }
+        }
+    }
+    
+    private func updateViews(with animal: Animal) {
+        title = animal.name
+        descriptionLabel.text = animal.description
+        coordinatesLabel.text = "lat: \(animal.latitude), long: \(animal.longitude)"
+        let df = DateFormatter()
+        df.dateStyle = .short
+        df.timeStyle = .short
+        timeSeenLabel.text = df.string(from: animal.timeSeen)
     }
 }

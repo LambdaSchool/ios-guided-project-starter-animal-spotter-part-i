@@ -20,6 +20,7 @@ class AnimalDetailViewController: UIViewController {
     
     //created a dependant. we will inject it with data.
     var animalName: String?
+    //optional because we are injecting it with a dependency.
     var apiController: APIController?
     
     // MARK: - View Lifecycle
@@ -31,10 +32,15 @@ class AnimalDetailViewController: UIViewController {
     
     private func getDetails() {
         guard let apiController = apiController,
-            let animalName = animalName else {return}
+              let animalName = animalName else { return }
         
-        apiController.fetchDetails(for: animalName) { (result) in
-            do{
+            apiController.fetchDetails(for: animalName) { (result) in
+                // or if let animal = try? result.get() {
+                // DispatchQueue.Main.Async {
+                // self.updatesViews(with: animal)
+                //}
+                //}
+            do {
                 let animal = try result.get()
                 DispatchQueue.main.async {
                     self.updateViews(with: animal)
@@ -64,6 +70,10 @@ class AnimalDetailViewController: UIViewController {
                         print("no data received, or data corrupted")
                     case .decodeError:
                         print("JSON could not be decoded")
+                    case .badImageEncoding:
+                        print("Bad image data from the API")
+                    case .badURL:
+                        print("Bad URL. please check endpoints")
                     }
                 }
             }

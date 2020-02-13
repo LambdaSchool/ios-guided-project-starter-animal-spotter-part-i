@@ -15,12 +15,16 @@ enum HTTPMethod: String {
 }
 
 enum NetworkError: Error {
+    case badImageEncoding
+    case badURL
     case noToken
     case badToken
     case unknownNetworkError
     case dataError
     case decodeError
 }
+
+//created the network errors that are possible.
 
 class APIController {
     
@@ -117,7 +121,7 @@ class APIController {
     // create function for fetching all animal names
     
     func fetchAllAnimalNames(completion: @escaping (Result<[String], NetworkError>) -> Void) {
-        
+        //this is saying we dont have a token at all.
         guard let bearer = bearer else {
             completion(.failure(.noToken))
             return
@@ -125,11 +129,12 @@ class APIController {
         
         let allAnimalsURL = baseUrl.appendingPathComponent("animals/all")
         var request = URLRequest(url: allAnimalsURL)
+        //adding the request as a full URL, getting the method for it, getting the header and token.
         request.httpMethod = HTTPMethod.get.rawValue
         request.setValue("Bearer \(bearer.token)", forHTTPHeaderField: "Authorization")
-        //handles the response
+        //handles the response. putting the request we made in the shared data task
         URLSession.shared.dataTask(with: request) { data, response, error in
-            //check for bad tokens
+            //check for bad tokens. this is saying that the token is bad or expired. not that it doesn't exist.
             if let response = response as? HTTPURLResponse,
                 response.statusCode == 401 {
                 completion(.failure(.badToken))
@@ -137,7 +142,7 @@ class APIController {
             }
             //check for errors
             if let error = error {
-                print("Error reeiving animal name data: \(error)")
+                NSLog("Error reeiving animal name data: \(error)")
                 completion(.failure(.unknownNetworkError))
                 return
             }
@@ -199,7 +204,7 @@ class APIController {
                 let animal = try decoder.decode(Animal.self, from: data)
                 completion(.success(animal))
             } catch {
-                print("Error decoding animal objects: \(error)")
+                NSLog("Error decoding animal object: \(error)")
                 completion(.failure(.decodeError))
                 return
             }
@@ -208,9 +213,13 @@ class APIController {
     
     // create function to fetch image
     
-    func fetchImage(at urlString: String, completion: @escaping (Result<UIImage, NetworkError>) -> Void) {
-        let imageURL = URL(string: urlString)!
-        
+    func fetchImage(at urlString: String, completion: @escaping (Result<UIImage, NetworkError>) -> ()) {
+       
+        //unwrapped the image URL instead of force unwrapping it.
+        guard let imageURL = URL(string: urlString) else {
+            completion(.failure(.badURL))
+            return
+        }
         var request = URLRequest(url: imageURL)
         request.httpMethod = HTTPMethod.get.rawValue
         
@@ -224,7 +233,10 @@ class APIController {
                 completion(.failure(.dataError))
                 return
             }
-            let image = UIImage(data: data)!
+            guard let image = UIImage(data: data) else {
+                completion(.failure(.badImageEncoding))
+                return
+            }
             completion(.success(image))
         }.resume()
     }

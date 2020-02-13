@@ -54,11 +54,42 @@ class AnimalsTableViewController: UITableViewController {
     // MARK: - Actions
     
     @IBAction func getAnimals(_ sender: UIBarButtonItem) {
-        // fetch all animals from API
+//        // fetch all animals from API without looking for an error
+//        apiController.fetchAllAnimalNames { result in
+//            if let arrayOfAnimalsNames = try? result.get() {
+//                DispatchQueue.main.async {
+//                    self.animalNames = arrayOfAnimalsNames.sorted()
+//                    //added the reload data to update the UI within the array of animals
+//
+//                }
+//            }
+//        }
+        //allows us to process the success with error handling in a switch statement. 
         apiController.fetchAllAnimalNames { result in
-            if let arrayOfAnimalsNames = try? result.get() {
+            do {
+                let names = try result.get()
                 DispatchQueue.main.async {
-                    self.animalNames = arrayOfAnimalsNames.sorted()
+                    self.animalNames = names
+                    self.tableView.reloadData()
+                }
+            } catch {
+                if let error = error as? NetworkError {
+                    switch error {
+                    case .noToken:
+                        NSLog("No bearer token please login")
+                    case .badToken:
+                        NSLog("old or bad token.")
+                    case .unknownNetworkError:
+                        NSLog("Unknown network error")
+                    case .decodeError:
+                        NSLog("Bad decoding of data")
+                    case .dataError:
+                        NSLog("bad data")
+                    case .badImageEncoding:
+                        NSLog("bad image encoding")
+                    case .badURL:
+                        NSLog("Bad URL data")
+                    }
                 }
             }
         }
@@ -74,12 +105,12 @@ class AnimalsTableViewController: UITableViewController {
                 loginVC.apiController = apiController
             }
         } else if segue.identifier == "ShowAnimalDetailSegue" {
-            //inject dependencies
+            //inject dependencies to the detail view. so they have the data needed.
             if let detailVC = segue.destination as? AnimalDetailViewController {
                 if let indexPath = tableView.indexPathForSelectedRow {
                     detailVC.animalName = animalNames[indexPath.row]
                 }
-                //FIXME:
+                //deleted the fix me that was here idk why it was ever here. lol
                 detailVC.apiController = apiController
             }
         }
